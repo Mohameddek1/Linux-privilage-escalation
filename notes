@@ -1,0 +1,32 @@
+Categories: 
+-Credential Access
+	-reused credential
+	-credentials from configuaration files
+	-credential from local databse
+	-Credentials from bash history
+	-ssh keys
+	-sudo access
+	-group privilages
+	
+-Exploit
+	-Service Running on localhost
+	-kernel version
+	-Binary file version
+-Misconfigaration
+	-Cron Jobs
+		+Writeable Cron job
+		+Writeable Cron job Dependancy
+	-SUID/SGID files
+	-Interesting capabilities on binaries
+	-Sensitive file Writeable
+		+/etc/passwd
+		+/etc/shadow
+		+/etc/sudoers
+		+configuration files
+	-sensitive files readable
+		+/etc/shadow
+		+/root/.ssh/id_rsa
+	-writeable path
+		+root $PATH writeable
+		+Directory in PATH writeable
+	-LD_PRELOAD set in /etc/sudoers
