@@ -1,0 +1,73 @@
+ps aux - services that is running
+
+#user enum:
+sudo -l
+cat etc/passwd
+cat etc/shadow
+cat etc/group
+history
+
+#network enum:
+ifconfig
+ip a
+route
+ip neigh
+netstat -ano
+
+#password enum
+grep --color=auto -rnw '/' -ie "PASSWORD=" --color=always 2> /dev/null
+locate passwoed | more
+find / -name id_rsa 2> /dev/null
+
+#automated tools
+linpeas
+linEnum
+suggester
+privchecker
+
+#kernel exploit
+github->kernel exploit
+uname -a
+-exploit database
+-suggester
+
+#passwords&File Persmission:
+----------------------------
+#Escalation via stored passwrords
+history
+su root
+github->payloadsAllTheThings->looting passwd
+linpeas
+
+#escalation via weak file permissions
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
