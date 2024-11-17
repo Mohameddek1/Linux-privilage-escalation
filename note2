@@ -299,13 +299,53 @@ iii.Execution:
 
     When the victim runs ls, the shell executes /tmp/ls instead of /bin/ls, potentially causing harm.
 
+**NOTE** - alias ls
+	 - export PATH=.:$PATH --> when create in your current folder then you run it "PATH=.:$PATH ./reader 01.txt"
 
 
+------------------------
+SUID exploitation
+------------------------
+1.Find SUID Files:
 
+-find / -perm -4000 -type f 2>/dev/null
 
+-This command lists all files with the SUID bit set.
 
+2.Recognizing SUID Permissions:
 
+-Example output from ls -l:
+-rwsr-xr-x 1 root root 150K Oct 16 15:42 /usr/bin/passwd
+-s in the owner's execute position (rws) indicates SUID.
 
+3.Basic Exploitation via SUID:
+
+    -If a SUID binary allows execution of commands or scripts, an attacker can potentially escalate privileges. Example:
+
+    ./vulnerable_binary /bin/bash
+
+    -If the binary runs with root privileges, this might give a root shell.
+
+4.Leverage SUID Misconfigurations:
+
+-Find Writable SUID Files:
+
+find / -perm -4000 -type f -writable 2>/dev/null
+
+-If an SUID file is writable, it can be replaced with a malicious binary.
+
+echo -e '#!/bin/bash\n/bin/bash' > /path/to/suid_file
+chmod +x /path/to/suid_file
+
+5.Debugging and Analyzing SUID Binaries:
+
+-Use strace to trace system calls:
+
+strace ./suid_binary
+
+-Check for file or command execution:
+
+ltrace ./suid_binary
 
 
 
