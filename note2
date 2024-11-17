@@ -162,3 +162,170 @@ apt-get install fdisk
 apt search disk
 apt-get purge fdisk
 apt-get update
+
+
+------------------------------
+linux file system permissions
+------------------------------
+man - manual page e.g man ls
+
+file
+->Read (r): Permission to view the contents of the file.
+->Write (w): Permission to modify the file or directory (e.g., editing, creating, or deleting files).
+->Execute (x): Permission to run a file as a program or script.
+
+->The first character indicates whether it's a regular file (-) or a directory (d).
+
+Octal Representation of Permissions:
+r (read) = 4
+w (write) = 2
+x (execute) = 1
+
+1. Symbolic Mode
+
+In symbolic mode, you use letters (r, w, x) and operators (+, -, =) to modify permissions.
+
+    Add permission: chmod +x file (adds execute permission)
+    Remove permission: chmod -x file (removes execute permission)
+    Set permission: chmod u+x file (sets execute permission for the user)
+
+e.g chmod u+x,g-w,o=r file
+-> This example gives the user execute permission (u+x), removes write permission from the group (g-w), and sets read-only permission for others (o=r).
+
+2. Numeric Mode
+
+In numeric mode, you use a three-digit number to represent permissions for user, group, and other. Each digit represents the sum of permissions:
+e.g chmod 754 file
+User: rwx (read, write, execute) = 7
+Group: r-x (read, execute) = 5
+Other: r-- (read-only) = 4
+
+##Changing Ownership##
+chown user:group file
+e.g chown john:developers file
+->This sets the owner of file to john and the group to developers.
+
+##to cjange just owner or just group ##
+
+chown john file   # Changes only the owner
+chown :developers file  # Changes only the group
+
+##Common Permission Commands##
+Check file permissions: ls -l file
+Change permissions: chmod (e.g., chmod 755 file)
+Change ownership: chown (e.g., chown user:group file)
+Change group ownership: chgrp (e.g., chgrp group file)
+
+##special cases##
+*Sticky Bit
+-While not directly related to SUID or GUID, the sticky bit is another special permission often used in conjunction.
+    -Purpose: Prevents users from deleting or renaming files in a shared directory unless they own the file or directory.
+~t~ -> sticky bit and ~s~
+
+
+
+1. SUID (Set User ID)
+-Purpose: When a file with the SUID bit set is executed, it runs with the privileges of the file's owner, not the user who is executing it.
+
+##How It Works:
+    -When SUID is set, the owner's permissions are temporarily inherited during execution.
+    -SUID only applies to executable binary files and not scripts.
+    -example passwd
+
+##Octal Representation: 4XXX
+    -Example: chmod 4755 file sets SUID.
+    -File with SUID: -rwsr-xr-x
+
+2. GUID (Set Group ID)
+
+    -Purpose: When a file with the GUID bit set is executed, it runs with the privileges of the file's group, not the user executing it.
+    -How It Works:
+    *On executable files, the group's permissions are inherited during execution.
+    *On directories, it forces all files and subdirectories created within the directory to inherit the directory's group ID.
+    
+##Octal Representation: 2XXX
+    -Example: chmod 2755 file sets GUID.
+    -File with GUID: -rwxr-sr-x
+
+##########
+EXAMPLES
+##########
+chmod 4755 file       # SUID
+chmod 2755 file       # GUID
+chmod 1755 directory  # Sticky Bit
+chmod 7755 file       # SUID + GUID + Sticky Bit
+
+8. Summary Table
+Octal	SUID	GUID	Sticky	Permissions
+4000	✅	❌	❌	SUID only
+2000	❌	✅	❌	GUID only
+1000	❌	❌	✅	Sticky Bit only
+7000	✅	✅	✅	SUID + GUID + Sticky
+
+
+
+
+
+
+-----------------------------------
+PATH HIJACKING
+-----------------------------------
+-is a technique where an attacker manipulates the $PATH environment variable to execute malicious scripts or binaries in place of legitimate system commands.
+
+1. How $PATH Works
+
+-The $PATH environment variable defines directories where the shell looks for executable programs. When you type a command like ls, the shell searches through the directories in $PATH sequentially to find the executable.
+
+    -Example $PATH:
+	/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin
+	-Directories are searched in the order they appear, from left to right.
+	-If a malicious file is placed earlier in the $PATH, it will execute instead of the intended command.
+
+2. Path Hijacking Attack Example
+
+i.Preparation:
+    -Attacker creates a malicious script named ls:
+
+    echo "rm -rf ~" > /tmp/ls
+    chmod +x /tmp/ls
+
+ii.Manipulating $PATH:
+
+    Attacker modifies the $PATH variable to prioritize /tmp:
+
+    export PATH=/tmp:$PATH
+
+iii.Execution:
+
+    When the victim runs ls, the shell executes /tmp/ls instead of /bin/ls, potentially causing harm.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
