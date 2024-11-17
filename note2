@@ -309,6 +309,9 @@ SUID exploitation
 1.Find SUID Files:
 
 -find / -perm -4000 -type f 2>/dev/null
+-find / -perm -u=s -type f 2>/dev/null
+-find / -perm -g=s -type f 2>/dev/null
+
 
 -This command lists all files with the SUID bit set.
 
@@ -348,12 +351,29 @@ strace ./suid_binary
 ltrace ./suid_binary
 
 
+- mktemp --> creates temporary files
+
+##gtfobins##
+-wget
+-hexdump
+-ssh-keygen
+-emacs and vim   ....etc....
 
 
 
 
+---------------------------
+SUDO EXPLOITATION
+---------------------------
+##Dockerfile##
+FROM ubuntu:latest
+RUN pat-get update
+RUN apt-get install sudo nano -y
+RUN echo "ubuntu:test" | chpasswd
 
-
+docker build -t sudo-lab .
+docker run -td --name sudo-lab --rm sudo-lab
+docker exec -it sudo-lab "/bib/bash"
 
 
 
