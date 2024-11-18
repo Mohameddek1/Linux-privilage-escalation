@@ -365,15 +365,236 @@ ltrace ./suid_binary
 ---------------------------
 SUDO EXPLOITATION
 ---------------------------
+###############################################
 ##Dockerfile##
 FROM ubuntu:latest
-RUN pat-get update
+RUN apt-get update
 RUN apt-get install sudo nano -y
 RUN echo "ubuntu:test" | chpasswd
 
 docker build -t sudo-lab .
 docker run -td --name sudo-lab --rm sudo-lab
-docker exec -it sudo-lab "/bib/bash"
+docker exec -it sudo-lab "/bin/bash"
+
+###############################################
+
+-sudo is a tool that allows users to execute commands with elevated privileges.
+
+1.List User Permissions:
+
+sudo -l
+
+This command shows which commands a user can run with sudo privileges.
+
+i. env_reset
+
+    -Purpose: Clears the environment of potentially harmful variables before running a command.
+
+ii.mail_badpass
+
+    -Purpose: Sends an email notification to the system administrator if an incorrect password is entered during a sudo command.
+
+iii.secure_path
+
+    Value:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
+	
+	-Purpose: Overrides the PATH environment variable for commands run via sudo, ensuring that only trusted directories are included in the path.
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-ALL NOPASSWORD
+-pip install *
+	setup.py --> sudo /usr/bin/pip install . --upgrade --force-reinstall --break-system-packages
+
+-tar
+-base64
+	
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
+-------------------------------------
+Wildcard expansion Exploitation
+-------------------------------------
+-Wildcard Expansion Exploitation in Linux is a method attackers might use to manipulate commands that process file patterns (wildcards like *, ?, [abc]) to gain unauthorized privileges, execute arbitrary commands, or alter the behavior of scripts
+
+-Wildcards: Special characters used to match filenames:
+
+    * matches zero or more characters.
+    ? matches a single character.
+    [abc] matches any one of the characters inside the brackets.
+    [!] this will match any character as long as its not listed between the [and].
+    \ used as an escape character i.e to protect a subsequent special character
+    {} terms are seperated by commas and each term must be the name of the something wildcard
+    
+    
+-Expansion: When a command containing wildcards is executed, the shell expands the wildcard into a list of matching filenames.
+
+1. Exploiting rm with Wildcards
+
+-When using rm with wildcards, an attacker can create files with special names to manipulate behavior.
+-Example:
+
+rm -rf *
+
+An attacker could create a malicious file:
+
+touch "--preserve-root"
+
+When rm runs, the expanded command becomes:
+
+rm -rf --preserve-root *
+
+This could prevent the rm command from functioning as intended.
+
+Mitigation:
+
+    Always use -- to indicate the end of options:
+
+rm -rf -- *
+
+
+2. Command Injection via tar
+
+The tar command may process filenames that begin with special characters like -- as options.
+
+Example:
+
+tar -cvf archive.tar *
+
+An attacker creates:
+
+touch "--checkpoint=1" "--checkpoint-action=exec=sh"
+
+When expanded, tar executes sh at every checkpoint.
+
+Mitigation:
+
+    Use -- to prevent treating filenames as options:
+
+tar -- -cvf archive.tar *
+
+3. Exploiting Scripts with find
+
+Using find with exec or xargs can be dangerous if filenames contain special characters.
+
+Example:
+
+***find . -type f -not -regex '.*\.\(jpg\|png\|gif\)' -exec bash -c "rm -f {}" \;
+
+find . -type f -exec rm {} \;
+
+An attacker creates a file:
+
+touch "file; rm -rf /;"
+
+When expanded, it could execute:
+
+rm file; rm -rf /
+
+Mitigation:
+
+    Use find with proper quoting:
+
+find . -type f -exec rm '{}' \;
+
+
+4. Exploiting Scripts with scp or rsync
+
+If wildcards are used in commands like scp or rsync, attackers might execute unauthorized commands by creating malicious files.
+
+2 servers
+echo "" > '-e sh shell.txt';
+e.g -> rsync -a -e 'ssh -p 2222' *.txt root@localhost:/tmp/
+	-> rsync -a -e 'ssh -p 2222' -e sh shell.txt root@localhost:/tmp/
+
+Example: A script:
+
+scp * user@host:/path
+
+An attacker creates:
+
+touch "`shutdown now`"
+
+Mitigation:
+
+    Avoid using wildcards directly in scripts. Use explicit filenames or sanitized input.
+
+5. Exploiting ? (Single Character Matching)
+
+If the script or command uses ? for filename matching, you can create files that deliberately match or avoid this pattern to bypass restrictions.
+
+Example:
+A script looks for a specific file pattern like file?.sh:
+
+ls file?.sh
+
+You can create a file filex.sh (where x is a single character) to force the script to process it.
+
+6.Curly Braces {} for Command Injection
+
+Curly braces expand terms separated by commas into multiple arguments. Unsanitized usage can lead to command injection.
+
+Example:
+A script processes filenames with:
+
+mv {file1,file2,file3}.txt /destination
+
+You can add a filename like file3.txt; rm -rf / to trigger destructive commands:
+
+touch 'file3.txt; rm -rf /'
+
+
+7.Escaping and Backslash Exploitation (\)
+
+Backslashes are often used to escape characters but can be abused if commands don't sanitize inputs properly.
+
+Example: Bypassing File Checks
+Suppose a script checks for files with exact names:
+
+ls file\?.txt
+
+You can create a file like file?.txt (literal ? character) to evade restrictions.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
